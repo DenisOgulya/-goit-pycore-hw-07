@@ -76,8 +76,39 @@ class AddressBook(UserDict):
     def delete(self, name):
         self.data.pop(name)
 
+    def get_upcoming_birthdays(self):
+        next_week_birthdays = []
+        today = datetime.today().date()
+        end_of_week = today + timedelta(days=7)
+        users = [AddressBook(el) for el in self.data]
+        for user in users:
+            birthday = datetime.strptime(user["birthday"], "%Y.%m.%d").date()
+            birthday_this_year = birthday.replace(year=today.year)
 
-  
+        # If birthday already passed this year, assume it's next year
+        if birthday_this_year < today:
+            birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+
+        if today <= birthday_this_year <= end_of_week:
+            user_copy = user.copy()
+           
+            
+            # If the birthday is on Saturday (5), move it to Monday
+            if birthday_this_year.weekday() == 5:
+                birthday_this_year += timedelta(days=2)
+            elif birthday_this_year.weekday() == 6:  # Sunday → Monday
+                birthday_this_year += timedelta(days=1)
+
+            user_copy["congratulation_date"] = birthday_this_year.strftime("%Y-%m-%d")
+            user_copy.pop("birthday")
+            
+            
+            
+            next_week_birthdays.append(user_copy)
+            
+
+    # return next_week_birthdays
+
 
 def main():
     book = AddressBook()
@@ -86,7 +117,7 @@ def main():
     john_record = Record("John")
     john_record.add_phone("1234567890")
     john_record.add_phone("5555555555")
-    john.record.add_birthday("31.12.1978")
+    john_record.add_birthday("31.12.1978")
 
     name = john_record.name.value
 
@@ -111,8 +142,8 @@ def main():
     # Видалення запису Jane
     book.delete("Jane")
     
-    bd = Birthday("11.07.2012")
-    print(bd.value)
+    book.get_upcoming_birthdays()
+    
     
 if __name__ == "__main__":
     main()   
