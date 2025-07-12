@@ -1,6 +1,6 @@
 from collections import UserDict
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Field:
     def __init__(self, value):
@@ -64,7 +64,7 @@ class Record:
                 phone.value =  new_phone 
             
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, bithday: {self.birthday.value}"
 
 class AddressBook(UserDict):
     def add_record(self, record):
@@ -80,34 +80,32 @@ class AddressBook(UserDict):
         next_week_birthdays = []
         today = datetime.today().date()
         end_of_week = today + timedelta(days=7)
-        users = [AddressBook(el) for el in self.data]
-        for user in users:
-            birthday = datetime.strptime(user["birthday"], "%Y.%m.%d").date()
-            birthday_this_year = birthday.replace(year=today.year)
+        
+        for key, value in self.data.items():
+            
+            # birthday = datetime.strptime(value.birthday.value, "%Y.%m.%d").date()
+            birthday_this_year = value.birthday.value.replace(year=today.year).date()
 
         # If birthday already passed this year, assume it's next year
-        if birthday_this_year < today:
-            birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+            if birthday_this_year < today:
+                birthday_this_year = birthday_this_year.replace(year=today.year + 1)
 
-        if today <= birthday_this_year <= end_of_week:
-            user_copy = user.copy()
+            if today <= birthday_this_year <= end_of_week:
+                # user_copy = value
            
             
             # If the birthday is on Saturday (5), move it to Monday
-            if birthday_this_year.weekday() == 5:
-                birthday_this_year += timedelta(days=2)
-            elif birthday_this_year.weekday() == 6:  # Sunday → Monday
-                birthday_this_year += timedelta(days=1)
+                if birthday_this_year.weekday() == 5:
+                    birthday_this_year += timedelta(days=2)
+                elif birthday_this_year.weekday() == 6:  # Sunday → Monday
+                    birthday_this_year += timedelta(days=1)
 
-            user_copy["congratulation_date"] = birthday_this_year.strftime("%Y-%m-%d")
-            user_copy.pop("birthday")
-            
-            
-            
-            next_week_birthdays.append(user_copy)
+                # user_copy["birthday"] = birthday_this_year.strftime("%Y-%m-%d")
+                
+                next_week_birthdays.append(value)
             
 
-    # return next_week_birthdays
+        return next_week_birthdays
 
 
 def main():
@@ -117,8 +115,10 @@ def main():
     john_record = Record("John")
     john_record.add_phone("1234567890")
     john_record.add_phone("5555555555")
-    john_record.add_birthday("31.12.1978")
+    john_record.add_birthday("13.08.1978")
 
+    
+    
     name = john_record.name.value
 
     # Додавання запису John до адресної книги
@@ -129,9 +129,7 @@ def main():
     jane_record.add_phone("9876543210")
     book.add_record(jane_record)
 
-    # Виведення всіх записів у книзі
-    for name, record in book.data.items():
-        print(record)
+    
 
     john = book.find('John')
     john.edit_phone("1234567890", "1112223333")
@@ -142,8 +140,10 @@ def main():
     # Видалення запису Jane
     book.delete("Jane")
     
-    book.get_upcoming_birthdays()
     
+    # Виведення всіх записів у книзі
+    for record in book.get_upcoming_birthdays():
+        print(record)
     
 if __name__ == "__main__":
     main()   
