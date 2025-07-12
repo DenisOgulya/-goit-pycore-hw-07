@@ -46,6 +46,7 @@ class Record:
 
     def add_birthday(self, birthday_data):
         self.birthday = Birthday(birthday_data)
+    
         
     def remove_phone(self, phone):
         new_phone_list = []
@@ -109,24 +110,68 @@ class AddressBook(UserDict):
             
 
         return next_week_birthdays
+    
+# Show birthday according to name
 
+    def show_birthday(self, name_for_find):
+        for key, value in self.data.items():
+            if key == name_for_find:
+                return value.birthday.value
 
 def main():
     book = AddressBook()
+    print("Welcome to the assistant bot!")
+    while True:
+        user_input = input("Enter a command: ")
+        command, *args = parse_input(user_input)
+
+        if command in ["close", "exit"]:
+            print("Good bye!")
+            break
+
+        elif command == "hello":
+            print("How can I help you?")
+
+        elif command == "add":
+            # реалізація
+            pass
+
+        elif command == "change":
+            # реалізація
+            pass
+        elif command == "phone":
+            # реалізація
+            pass
+        elif command == "all":
+            # реалізація
+            pass
+        elif command == "add-birthday":
+            # реалізація
+            pass
+        elif command == "show-birthday":
+            # реалізація
+            pass
+        elif command == "birthdays":
+            # реалізація
+            pass
+        else:
+            print("Invalid command.")
+
+    
 
     # Створення запису для John
     john_record = Record("John")
     john_record.add_phone("1234567890")
     john_record.add_phone("5555555555")
     john_record.add_birthday("13.08.1978")
-
+    
     
     
     name = john_record.name.value
 
     # Додавання запису John до адресної книги
     book.add_record(john_record)
-
+    book.show_birthday('John')
     # Створення та додавання нового запису для Jane
     jane_record = Record("Jane")
     jane_record.add_phone("9876543210")
