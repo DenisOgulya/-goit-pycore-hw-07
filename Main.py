@@ -15,9 +15,12 @@ class Name(Field):
     
 class Phone(Field):
     def __init__(self, phone):
-        if(len(phone) == 10):
-            super().__init__(phone)
-        #HERE SHOULD BE ERROR
+        try:
+            if(len(phone) == 10):
+                super().__init__(phone)
+        except ValueError:
+            raise ValueError("Invalid date format: use 10-numbers phone")
+
         
 class Birthday(Field):
     def __init__(self, value):
@@ -76,7 +79,7 @@ class AddressBook(UserDict):
     def delete(self, name):
         self.data.pop(name)
 
-    def get_upcoming_birthdays(self):
+    def birthdays(self):
         next_week_birthdays = []
         today = datetime.today().date()
         end_of_week = today + timedelta(days=7)
@@ -142,7 +145,7 @@ def main():
     
     
     # Виведення всіх записів у книзі
-    for record in book.get_upcoming_birthdays():
+    for record in book.birthdays():
         print(record)
     
 if __name__ == "__main__":
