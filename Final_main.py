@@ -1,6 +1,7 @@
 from collections import UserDict
 import re
 from datetime import datetime, timedelta
+from decorators import input_error
 
 class Field:
     def __init__(self, value):
@@ -15,11 +16,11 @@ class Name(Field):
     
 class Phone(Field):
     def __init__(self, phone):
-        try:
-            if(len(phone) == 10):
-                super().__init__(phone)
-        except ValueError:
-            raise ValueError("Invalid date format: use 10-numbers phone")
+             # Залишаємо лише цифри
+            clean_phone = ''.join(filter(str.isdigit, phone))
+            if len(clean_phone) != 10:
+                raise ValueError("Invalid phone format: use 10-digit number")
+            super().__init__(clean_phone)
 
         
 class Birthday(Field):
@@ -73,6 +74,8 @@ class Record:
 class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record
+        message = "contact added"
+        return message
         
     def find(self, name):
         return self.data.get(name)
@@ -118,43 +121,86 @@ class AddressBook(UserDict):
             if key == name_for_find:
                 return value.birthday.value
 
+
+def parse_input(user_input):
+    cmd, *args = user_input.split()
+    cmd = cmd.strip().lower()
+    return cmd, *args
+
+@input_error
+def add_contacts(args, book: AddressBook):
+     name, phone, *_ = args
+     record = book.find(name)
+     message = "Contact updated."
+     if record is None:
+        record = Record(name)
+        book.add_record(record)
+        message = "Contact added."
+     if phone:
+        record.add_phone(phone)
+     return message
+
+@input_error
+def show_phone(args, contacts):
+    name = args[0]
+    if name in contacts:
+        return (contacts[name])
+    else:
+        return("There is no contuct with such name!")
+
+@input_error
+def change_contact(args, contacts):
+    name, phone = args
+    if name in contacts:
+        contacts[name] = phone
+        return("Contact was changed")
+    else:
+        return("There is no contuct with such name!")
+
+
+@input_error
+def all_contacts(contacts):
+    for name, number in contacts.items():
+        print(name, number)
+
 def main():
     book = AddressBook()
-   
+    print("Welcome to the assistant bot!")
+    while True:
+        user_input = input("Enter a command: ")
+        command, *args = parse_input(user_input)
 
-    # Створення запису для John
-    john_record = Record("John")
-    john_record.add_phone("1234567890")
-    john_record.add_phone("5555555555")
-    john_record.add_birthday("13.08.1978")
-    
-    
-    
-    name = john_record.name.value
+        if command in ["close", "exit"]:
+            print("Good bye!")
+            break
 
-    # Додавання запису John до адресної книги
-    book.add_record(john_record)
-    book.show_birthday('John')
-    # Створення та додавання нового запису для Jane
-    jane_record = Record("Jane")
-    jane_record.add_phone("9876543210")
-    book.add_record(jane_record)
+        elif command == "hello":
+            print("How can I help you?")
 
-    
+        elif command == "add":
+            print(add_contacts(args, book))
 
-    john = book.find('John')
-    john.edit_phone("1234567890", "1112223333")
+        elif command == "change":
+            pass
 
-    found_phone = john.find_phone("5555555555")
-    john.remove_phone("5555555555")
+        elif command == "phone":
+            pass
 
-    # Видалення запису Jane
-    book.delete("Jane")
-    
-    
-    # Виведення всіх записів у книзі
-    for record in book.birthdays():
-        print(record)
-    
+        elif command == "all":
+             pass
+
+        elif command == "add-birthday":
+            pass
+
+        elif command == "show-birthday":
+            pass
+
+        elif command == "birthdays":
+            pass
+
+        else:
+            print("Invalid command.")
+            
+            
 if __name__ == "__main__":
     main()   
