@@ -69,8 +69,8 @@ class Record:
                 phone.value =  new_phone 
             
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, bithday: {self.birthday.value}"
-
+        birthday_str = self.birthday.value.strftime("%d.%m.%Y") if self.birthday else "not set"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, birthday: {birthday_str}"
 class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record
@@ -141,27 +141,30 @@ def add_contacts(args, book: AddressBook):
      return message
 
 @input_error
-def show_phone(args, contacts):
+def show_phone(args, book):
     name = args[0]
-    if name in contacts:
-        return (contacts[name])
+    record = book.find(name)
+    if not record:
+        return ("There is no contact with such name")
     else:
-        return("There is no contuct with such name!")
+        phones = '; '.join(phone.value for phone in record.phones)
+        return(phones)
 
 @input_error
-def change_contact(args, contacts):
-    name, phone = args
-    if name in contacts:
-        contacts[name] = phone
-        return("Contact was changed")
+def change_contact(args, book: AddressBook):
+    name, old_phone, new_phone, *_ = args
+    record = book.find(name)
+    if not record:
+        return("There is no Contact with such name!")
     else:
-        return("There is no contuct with such name!")
+        record.edit_phone(old_phone, new_phone)
+        return("Number was changed")
 
 
 @input_error
-def all_contacts(contacts):
-    for name, number in contacts.items():
-        print(name, number)
+def all_contacts(book):
+    for key, record in book.data.items():
+        print(record)
 
 def main():
     book = AddressBook()
@@ -181,13 +184,14 @@ def main():
             print(add_contacts(args, book))
 
         elif command == "change":
-            pass
+            print(change_contact(args, book))
 
         elif command == "phone":
-            pass
+            print (show_phone(args, book))
 
         elif command == "all":
-             pass
+            print(all_contacts(book))
+            
 
         elif command == "add-birthday":
             pass
