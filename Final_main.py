@@ -24,17 +24,17 @@ class Phone(Field):
 
         
 class Birthday(Field):
-    def __init__(self, value):
-        try:
-            # Додайте перевірку коректності даних
+    def __init__(self, value):          
+    # Додайте перевірку коректності даних
             pattern = r"\d{2}.\d{2}.\d{4}"
-            if re.fullmatch(pattern, value):
+            if not re.fullmatch(pattern, value):
+                raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            try:
                 # та перетворіть рядок на об'єкт datetime
-                self.value = datetime.strptime(value, "%d.%m.%Y")
-                super().__init__(self.value)
-                
-        except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+                data_obj = datetime.strptime(value, "%d.%m.%Y")
+                super().__init__(data_obj)
+            except ValueError:
+                raise ValueError("Invalid date format. Use DD.MM.YYYY")    
 
 class Record:
     def __init__(self, name):
@@ -160,11 +160,34 @@ def change_contact(args, book: AddressBook):
         record.edit_phone(old_phone, new_phone)
         return("Number was changed")
 
+@input_error
+def add_birthday(args, book):
+    name, birthday_data, *_ = args
+    record = book.find(name)
+    if not record:
+        return("There is no Contact with such name!")
+    else:
+        record.add_birthday(birthday_data)
+        return ("Contact was updated")
+
+@input_error
+def show_birthday(args, book):
+    name, *_ = args
+    record = book.find(name)
+    if not record:
+        return("There is no Contact with such name!")
+    else:
+        return record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "Birthday not set"
+    
+@input_error
+def show_birthdays(args, book): 
+      for key, record in book.data.items():
+        return record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "Birthday not set"     
 
 @input_error
 def all_contacts(book):
     for key, record in book.data.items():
-        print(record)
+        return record
 
 def main():
     book = AddressBook()
@@ -194,13 +217,13 @@ def main():
             
 
         elif command == "add-birthday":
-            pass
+            print(add_birthday(args, book))
 
         elif command == "show-birthday":
-            pass
+            print(show_birthday(args, book))
 
         elif command == "birthdays":
-            pass
+            print(show_birthdays(args, book))
 
         else:
             print("Invalid command.")
